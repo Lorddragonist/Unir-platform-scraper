@@ -1,4 +1,4 @@
-from playwright.async_api import async_playwright, Page, Browser as PlaywrightBrowser
+from playwright.async_api import async_playwright, Page, Browser as PlaywrightBrowser, ElementHandle
 from interfaces.browser import Browser
 import asyncio
 
@@ -25,6 +25,7 @@ class PlaywrightBrowserImpl(Browser):
         if not self.page:
             raise RuntimeError(self.errorInitialize)
         await self.page.goto(url)
+        await self.page.wait_for_load_state('networkidle')
         
     async def wait_for_selector(self, selector: str, timeout: int = 5000) -> bool:
         """Espera a que el selector especificado esté presente en la página"""
@@ -36,17 +37,29 @@ class PlaywrightBrowserImpl(Browser):
         except TimeoutError:
             return False
         
-    async def click(self, selector: str) -> None:
+    def get_element_by_selector(self, selector: str, **kwargs) -> ElementHandle:
+        """Obtiene el elemento especificado por el selector"""
+        if not self.page:
+            raise RuntimeError(self.errorInitialize)
+        return self.page.locator(selector, **kwargs)
+        
+    async def click(self, selector: str, **kwargs) -> None:
         """Clickea en el elemento especificado"""
         if not self.page:
             raise RuntimeError(self.errorInitialize)
-        await super().click(selector)
+        await self.page.click(selector, **kwargs)
         
     async def fill(self, selector: str, text: str) -> None:
         """Escribe el texto especificado en el elemento especificado"""
         if not self.page:
             raise RuntimeError(self.errorInitialize)
         await self.page.fill(selector, text)
+        
+    async def wait_for_timeout(self, timeout: int) -> None:
+        """Espera el tiempo especificado"""
+        if not self.page:
+            raise RuntimeError(self.errorInitialize)
+        await self.page.wait_for_timeout(timeout)
         
     async def close(self) -> None:
         """Cierra el navegador"""

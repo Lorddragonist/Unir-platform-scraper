@@ -1,6 +1,9 @@
 import asyncio
 from browser.playwright_browser import PlaywrightBrowserImpl
 from config.settings import Settings
+from services.loging_service import LogingService
+from services.programs_service import ProgramsService
+from services.courses_service import CoursesService
 
 
 async def main():
@@ -20,8 +23,19 @@ async def main():
             viewport_height=Settings.VIEWPORT_HEIGHT
         )
         
-        # Navegar a la página de inicio de sesión de Moodle
-        await browser.navigate(Settings.MOODLE_URL)
+        # Iniciar sesión
+        login_service = LogingService(browser)
+        
+        await login_service.login(Settings.MOODLE_URL, Settings.MOODLE_USERNAME, Settings.MOODLE_PASSWORD)
+        print("Inicio de sesión exitoso")
+        
+        # Obtener los programas
+        programs_service = ProgramsService(browser)
+        programas =await programs_service.get_programs(Settings.MOODLE_URL)
+        
+        # Obtener los cursos
+        courses_service = CoursesService(browser)
+        await courses_service.get_courses(Settings.MOODLE_URL, programas)
         
         input("Presione Enter para cerrar el navegador...")
         

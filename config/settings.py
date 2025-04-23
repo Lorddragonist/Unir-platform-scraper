@@ -12,6 +12,7 @@ class Settings:
     
     # Configuración del navegador
     HEADLESS = os.getenv("HEADLESS", "False").lower() == "true"
+    print(f"HEADLESS: {HEADLESS}")
     VIEWPORT_WIDTH = int(os.getenv("VIEWPORT_WIDTH", 1920))
     VIEWPORT_HEIGHT = int(os.getenv("VIEWPORT_HEIGHT", 1080))
     
