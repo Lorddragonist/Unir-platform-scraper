@@ -11,8 +11,11 @@ class LogingService:
         """Inicia sesión en Moodle"""
         
         try:
-            await self.browser.navigate(url)
-            await self.browser.wait_for_timeout(1000)
+            # Navegar a la URL de la plataforma Moodle si no se ha navegado aún
+            current_url = await self.browser.get_current_url()
+            if current_url != url:
+                await self.browser.navigate(url)
+                await self.browser.wait_for_timeout(1000)
         
             # Validar si se presenta el banner de cookies
             cookies_banner = await self.browser.wait_for_selector("#truste-consent-button")

@@ -16,6 +16,11 @@ class Browser(ABC):
         pass
     
     @abstractmethod
+    async def get_current_url(self) -> str:
+        """Obtiene la URL actual de la página"""
+        pass
+    
+    @abstractmethod
     async def wait_for_selector(self, selector: str, timeout: int = 5000) -> bool:
         """Espera a que el selector especificado esté presente en la página"""
         pass

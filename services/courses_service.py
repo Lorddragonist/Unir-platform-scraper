@@ -1,41 +1,50 @@
 import asyncio
 from interfaces.browser import Browser
 
+
 class CoursesService:
     """Servicio para obtener los cursos de cada programa"""
 
     def __init__(self, browser: Browser):
         self.browser = browser
-        
-    async def get_courses(self, url: str, programs: list[dict]) -> None:
-        """Obtiene los cursos de un programa"""
-        
+
+    async def get_courses(self, url: str) -> list[dict]:
+        """Obtiene los cursos de los programas"""
+        courses_list = []
+
         try:
-                
-            
-            # Ir a la url
-            await self.browser.navigate(url)
-            await self.browser.wait_for_timeout(1000)
-            
-            # Obtener los cursos de cada programa
-            for program in programs:
-                # identificar el programa en la pagina
-                program_element = self.browser.get_element_by_selector("span.media-body", has_text=f"{program['nombre']}")
-                                
-                cursos = []
-                # Obtener los cursos del programa
-                cursos_element = program_element.locator("a.list-group-item.coursenode")
-                numero_cursos = await cursos_element.count()
+            # Navegar a la URL de la plataforma Moodle si no se ha navegado aún
+            current_url = await self.browser.get_current_url()
+            if current_url != url:
+                await self.browser.navigate(url)
+                await self.browser.wait_for_timeout(1000)
+
+            # Obtener elemento navbar lateral de Moodle que contiene los programas
+            navbar_lateral = self.browser.get_element_by_selector(".list-group").nth(0)
+            if navbar_lateral:
+                # Obtener cursos de la navbar lateral
+                cursos = navbar_lateral.locator("a.list-group-item.coursenode")
+
+                # Obtener numero de cursos
+                numero_cursos = await cursos.count()
                 print(f"Numero de cursos: {numero_cursos}")
-                
-                # Obtener los cursos del programa
+
+                # Obtener nombre de cada programa
                 for i in range(numero_cursos):
-                    curso_element = cursos_element.nth(i)
-                    curso_nombre = await curso_element.locator("span").nth(1).text_content()
-                    cursos.append(curso_nombre)
-                    
-                print(f"Cursos del programa {program['nombre']}: {cursos}")
-                
+                    nombre_cursos = (
+                        await cursos.nth(i).locator("span").nth(1).text_content()
+                    )
+                    link_curso = await cursos.nth(i).get_attribute("href")
+
+                    courses_list.append(
+                        {
+                            "nombre": nombre_cursos,
+                            "link": link_curso,
+                        }
+                    )
+
+                return courses_list
+
         except Exception as e:
             print(f"Error al obtener los cursos: {e}")
-            
+            return []

@@ -27,6 +27,12 @@ class PlaywrightBrowserImpl(Browser):
         await self.page.goto(url)
         await self.page.wait_for_load_state('networkidle')
         
+    async def get_current_url(self) -> str:
+        """Obtiene la URL actual de la página"""
+        if not self.page:
+            raise RuntimeError(self.errorInitialize)
+        return self.page.url
+        
     async def wait_for_selector(self, selector: str, timeout: int = 5000) -> bool:
         """Espera a que el selector especificado esté presente en la página"""
         if not self.page:
